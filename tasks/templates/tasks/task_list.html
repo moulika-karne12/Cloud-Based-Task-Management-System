@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name=" viewport", content="width = device-width, initial-scale=1.0">
+        <title>Task List</title>
+    </head>
+    <body>
+        {% if custom_user.is_authenticated %}
+            <p>Welcome, {{ custom_user.username }}! <a href="{% url 'logout' %}">Logout</a></p>
+        {% else %}
+            <p><a href="{% url 'login' %}">Login</a></p>
+        {% endif %}
+
+        <h1> TASK LIST </h1>
+
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Category</th>
+                    <th>User</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td>{{ task.title }}</td>
+                    <td>{{ task.description }}</td>
+                    <td>{{ task.due_date }}</td>
+                    <td>{{ task.status }}</td>
+                    <td>{{ task.priority }}</td>
+                    <td>{{ task.category.name }}</td>
+                    <td>{{ task.custom_user.username }}</td>
+                    <td>
+                        <!-- Link to update the particluar task-->
+                        <a href="{% url 'task_update' task.id %}">Update</a>
+
+                        <!-- To delete the task-->
+                         <form action="{% url 'task_delete' task.id %}" method="POST" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit">Delete</button>
+                         </form>
+                    </td>
+
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">NO TASKS AVAILABLE!!!</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+            <a href ="{% url 'task_create' %}">Create New Task</a>
+    </body>
+
+
+</html>
