@@ -19,6 +19,8 @@ class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = '__all__'
+        read_only_fields = ['custom_user']  # ✅ Prevent frontend from needing to send this
+
 
 class TaskAssignmentSerializer(serializers.ModelSerializer):
     class Meta:

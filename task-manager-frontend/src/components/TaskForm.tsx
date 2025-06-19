@@ -16,7 +16,7 @@ const TaskForm = ({ onTaskCreated }: { onTaskCreated: () => void }) => {
     }
 
     try {
-      await axios.post(
+      const response = await axios.post(
         "http://127.0.0.1:8000/api/tasks/",
         { title, description, status, category : 1},
         {
@@ -31,8 +31,8 @@ const TaskForm = ({ onTaskCreated }: { onTaskCreated: () => void }) => {
       setStatus("Pending");
       alert("Task created successfully!");
       onTaskCreated(); // Refresh task list
-    } catch (error) {
-      console.error("Failed to create task:", error);
+    } catch (error: any) {
+      console.error("Failed to create task:", error?.response?.data || error);
       alert("Failed to create task!");
     }
   };

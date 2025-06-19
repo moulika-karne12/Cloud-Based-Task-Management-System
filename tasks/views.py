@@ -34,7 +34,14 @@ class TaskViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminOrOwner]  # Require authentication  Authenticated users + Role-based control
 
     def perform_create(self, serializer):
-        serializer.save(custom_user=self.request.user)  # Assign task to logged-in user
+        try:
+            print("✅ request.user:", self.request.user)
+            print("✅ request.data:", self.request.data)
+            serializer.save(custom_user=self.request.user) # assign the current user as the task owner
+        except Exception as e:
+            print("❌ Error while saving task:", str(e))
+            raise e
+
 
     def destroy(self, request, *args, **kwargs):
         task = self.get_object()
