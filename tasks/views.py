@@ -45,9 +45,18 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         task = self.get_object()
-        if not request.user.is_staff:  # Only allow admins to delete tasks
+        if not request.user.is_staff and task.custom_user != request.user:  # Only allow admins to delete tasks
             return Response({"error": "You do not have permission to delete this task."}, status=403)
         return super().destroy(request, *args, **kwargs)
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            return Task.objects.all()
+        return Task.objects.filter(custom_user=user)
+    
+    def perform_update(self, serializer):
+        serializer.save(custom_user=self.request.user)
 
 class TaskCategoryViewSet(viewsets.ModelViewSet):
     queryset = TaskCategory.objects.all()
@@ -55,8 +64,8 @@ class TaskCategoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]  # Require authentication
 
 class IsAdminOnly(BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_staff  # Only allow staff users
+    def has_permission(self, request, view, obj):
+        return request.user.is_staff or obj.custom_user == request.user  # Only allow staff users
 
 class TaskAssignmentViewSet(viewsets.ModelViewSet):
     queryset = TaskAssignment.objects.all()
