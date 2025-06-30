@@ -58,7 +58,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save(custom_user=self.request.user)
 
-class TaskCategoryViewSet(viewsets.ModelViewSet):
+class TaskCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = TaskCategory.objects.all()
     serializer_class = TaskCategorySerializer
     permission_classes = [IsAuthenticated]  # Require authentication
