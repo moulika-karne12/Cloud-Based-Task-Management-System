@@ -16,11 +16,18 @@ class TaskCategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class TaskSerializer(serializers.ModelSerializer):
+    custom_user = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), required=False
+    )
+    assigned_user = serializers.SerializerMethodField()
     class Meta:
         model = Task
         fields = '__all__'
         read_only_fields = ['custom_user']  # ✅ Prevent frontend from needing to send this
-
+        
+    #This adds a new field assigned_user (just the name, not the whole user object) to each task response.
+    def get_assigned_user(self, obj):
+        return obj.custom_user.username if obj.custom_user else None
 
 class TaskAssignmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -42,4 +49,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def get_token(cls, user):
         token = super().get_token(user)
         token['username'] = user.username  # Add username to token payload
+        token['is_staff'] = user.is_staff
+        token['email'] = user.email
         return token

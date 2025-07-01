@@ -95,6 +95,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',  # Require authentication for all API views
     ),
+    'DEFAULT_PAGINATION_CLASS': 'tasks.pagination.CustomPagination',  # Custom pagination class for consistent API responses
+    'PAGE_SIZE': 2, # Default page size for pagination
 }
 
 

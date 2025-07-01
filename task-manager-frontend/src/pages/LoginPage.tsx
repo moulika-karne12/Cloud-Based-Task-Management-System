@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import * as jwt_decode from "jwt-decode";
+
+interface JwtPayload {
+  is_staff: boolean;
+  username: string;
+}
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -15,11 +21,20 @@ const LoginPage: React.FC = () => {
         password,
       });
 
-      localStorage.setItem('access_token', response.data.access);
-      localStorage.setItem('refresh_token', response.data.refresh);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
+      const accessToken = response.data.access;
+      const refreshToken = response.data.refresh;
 
-      navigate('/tasks');  // Redirect to tasks after login
+      // ✅ Decode the JWT to extract `is_staff`
+      const decoded = jwt_decode.jwtDecode<JwtPayload>(accessToken);
+      const isAdmin = decoded.is_staff;
+
+      // ✅ Store everything
+      localStorage.setItem('access_token', accessToken);
+      localStorage.setItem('refresh_token', refreshToken);
+      localStorage.setItem('is_admin', String(isAdmin)); // 🔥 This line enables admin UI
+      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+
+      navigate('/tasks');  // Redirect to dashboard
     } catch (error) {
       alert('Login failed! Check your credentials.');
     }

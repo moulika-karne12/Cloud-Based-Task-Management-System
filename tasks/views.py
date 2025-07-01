@@ -9,6 +9,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 from .serializers import CustomUserSerializer, CustomTokenObtainPairSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.decorators import login_required
@@ -23,6 +25,16 @@ from rest_framework.permissions import IsAuthenticated
 
 User = get_user_model()
 
+# class NoPagination(PageNumberPagination):
+#     page_size = None
+    
+class UserListView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = CustomUserSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = None  # Disable pagination for user list
+
+    
 # Custom permission: Admins can modify all tasks, users can only modify their own
 class IsAdminOrOwner(BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -37,7 +49,16 @@ class TaskViewSet(viewsets.ModelViewSet):
         try:
             print("✅ request.user:", self.request.user)
             print("✅ request.data:", self.request.data)
-            serializer.save(custom_user=self.request.user) # assign the current user as the task owner
+            user = self.request.user
+            assigned_user_id = self.request.data.get('custom_user')
+
+            if user.is_staff and assigned_user_id:
+                # Allow admin to assign the task to another user
+                assigned_user = User.objects.get(id=assigned_user_id)
+                serializer.save(custom_user=assigned_user)
+            else:
+                # Regular user: assign to themselves
+                serializer.save(custom_user=user)
         except Exception as e:
             print("❌ Error while saving task:", str(e))
             raise e
@@ -51,17 +72,36 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_staff:
-            return Task.objects.all()
-        return Task.objects.filter(custom_user=user)
+        queryset = Task.objects.all().order_by("id") if user.is_staff else Task.objects.filter(custom_user=user)
+
+        # Optional query parameters
+        status = self.request.query_params.get('status')
+        category = self.request.query_params.get('category')
+        search = self.request.query_params.get('search')
+
+        if status and status != "All":
+            queryset = queryset.filter(status=status)
+
+        if category and category != "All":
+            queryset = queryset.filter(category__id=category)
+
+        if search:
+            queryset = queryset.filter(title__icontains=search)
+
+        return queryset
+
     
     def perform_update(self, serializer):
-        serializer.save(custom_user=self.request.user)
+        # //serializer.save(custom_user=self.request.user)
+        serializer.save()        
+        print("✏️ Updating task with:", self.request.data)
+
 
 class TaskCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = TaskCategory.objects.all()
     serializer_class = TaskCategorySerializer
     permission_classes = [IsAuthenticated]  # Require authentication
+    pagination_class = None  # Disable pagination for categories
 
 class IsAdminOnly(BasePermission):
     def has_permission(self, request, view, obj):

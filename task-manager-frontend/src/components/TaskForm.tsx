@@ -1,12 +1,22 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
+interface User {
+  id: number;
+  username: string;
+}
+
+
 const TaskForm = ({ onTaskCreated }: { onTaskCreated: () => void }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("Pending");
   const [category, setCategory] = useState<number | null>(null);  // selected category
   const [categories, setCategories] = useState<any[]>([]);       // category list
+  const [dueDate, setDueDate] = useState('');
+  const [users, setUsers] = useState<User[]>([]);
+  const [assignedUser, setAssignedUser] = useState(''); 
+  const isAdmin = localStorage.getItem("is_admin") === "true";
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -20,7 +30,7 @@ const TaskForm = ({ onTaskCreated }: { onTaskCreated: () => void }) => {
     try {
       const response = await axios.post(
         "http://127.0.0.1:8000/api/tasks/",
-        { title, description, status, category},
+        { title, description, status, category, due_date: dueDate, ...(assignedUser && { custom_user: assignedUser }) },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -40,6 +50,19 @@ const TaskForm = ({ onTaskCreated }: { onTaskCreated: () => void }) => {
       alert("Failed to create task!");
     }
   };
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const token = localStorage.getItem('access_token');
+      const res = await axios.get('http://127.0.0.1:8000/api/users/', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUsers(res.data);
+    };
+    // Call only if admin (you can also check from token or role field)
+    fetchUsers();
+  }, []);
+
 
   useEffect(() => {
       const fetchCategories = async () => {
@@ -109,6 +132,30 @@ const TaskForm = ({ onTaskCreated }: { onTaskCreated: () => void }) => {
           ))}
         </select>
       </div>
+      <input
+        type="date"
+        className="form-control mb-3"
+        value={dueDate}
+        onChange={(e) => setDueDate(e.target.value)}
+      />
+      {isAdmin && users.length > 0 && (
+        <div className="mb-3">
+          <label className="form-label">Assign to User</label>
+          <select
+            className="form-select"
+            value={assignedUser}
+            onChange={(e) => setAssignedUser(e.target.value)}
+          >
+            <option value="">Select User</option>
+            {users.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.username}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       <button type="submit" className="btn btn-primary">
         Create Task
       </button>
