@@ -8,6 +8,7 @@ interface Task {
   status: string;
   due_date: string;
   custom_user: string;
+  priority: number;
 }
 
 interface User {
@@ -91,10 +92,25 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({ task, onClose, onSave, us
             <input
               type="date"
               className="form-control mb-2"
-              name="due_date"
+              name="due_date" 
               value={formData.due_date?.split('T')[0] || ''}
               onChange={handleChange}
             />
+            <div className="mb-3">
+            <label className="form-label">Priority</label>
+            <select
+              className="form-select"
+              value={formData.priority}
+              onChange={(e) =>
+                setFormData({ ...formData, priority: Number(e.target.value) })
+              }
+            >
+              <option value={1}>High</option>
+              <option value={2}>Medium</option>
+              <option value={3}>Low</option>
+            </select>
+          </div>
+
 
             {isAdmin && (
               <select

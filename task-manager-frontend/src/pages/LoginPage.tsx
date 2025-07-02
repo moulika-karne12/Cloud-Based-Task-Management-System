@@ -26,6 +26,7 @@ const LoginPage: React.FC = () => {
 
       // ✅ Decode the JWT to extract `is_staff`
       const decoded = jwt_decode.jwtDecode<JwtPayload>(accessToken);
+      localStorage.setItem("username", decoded.username); // Store username
       const isAdmin = decoded.is_staff;
 
       // ✅ Store everything
@@ -34,32 +35,67 @@ const LoginPage: React.FC = () => {
       localStorage.setItem('is_admin', String(isAdmin)); // 🔥 This line enables admin UI
       axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
 
-      navigate('/tasks');  // Redirect to dashboard
+      navigate('/dashboard');  // Redirect to dashboard
     } catch (error) {
       alert('Login failed! Check your credentials.');
     }
   };
 
+  // return (
+  //   <div>
+  //     <h2>Login</h2>
+  //     <form onSubmit={handleLogin}>
+  //       <input
+  //         type="text"
+  //         placeholder="Username"
+  //         value={username}
+  //         onChange={(e) => setUsername(e.target.value)}
+  //         required
+  //       />
+  //       <input
+  //         type="password"
+  //         placeholder="Password"
+  //         value={password}
+  //         onChange={(e) => setPassword(e.target.value)}
+  //         required
+  //       />
+  //       <button type="submit">Login</button>
+  //     </form>
+  //   </div>
+  // );
   return (
-    <div>
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Login</button>
-      </form>
+    <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
+      <div className="me-5">
+        <h1 className="display-4 fw-bold">TaskFlow - Your Focus Ally</h1>
+        <p className="text-center fs-5">Plan better. Work smarter. Finish faster.</p>
+      </div>
+      <div className="card p-4 shadow" style={{ width: '400px' }}>
+        <h2 className="text-center mb-4">Login</h2>
+        <form onSubmit={handleLogin}>
+          <div className="mb-3">
+            <label className="form-label">Username</label>
+            <input
+              type="text"
+              className="form-control"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Password</label>
+            <input
+              type="password"
+              className="form-control"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <button type="submit" className="btn btn-primary w-100">Login</button>
+        </form>
+        <div className="mt-3 text-center">
+          <a href="/register">Don't have an account? Register</a>
+        </div>
+      </div>
     </div>
   );
 };

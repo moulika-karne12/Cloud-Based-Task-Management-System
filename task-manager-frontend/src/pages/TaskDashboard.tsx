@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import TaskForm from "../components/TaskForm"; // Add this import at top
 import EditTaskModal from '../components/EditTaskModal';
 
 interface Task {
@@ -11,6 +10,7 @@ interface Task {
   status: string;
   due_date: string,
   assigned_user?: string; 
+  priority: number;
 }
 
 interface Category {
@@ -247,7 +247,7 @@ const fetchTasks = async (url?: string) => {
       <h2>Task Dashboard</h2>
       {/* <button onClick={handleLogout} className="btn btn-danger mb-3">Logout</button> */}
 
-      <TaskForm onTaskCreated={() => window.location.reload()} /> {/* New Form */}
+      {/* <TaskForm onTaskCreated={() => window.location.reload()} /> New Form */}
 
       {tasks.length === 0 ? (
         <p>No tasks found. Try adding some tasks!</p>
@@ -270,23 +270,57 @@ const fetchTasks = async (url?: string) => {
           </select>
         </div>
        
-        /* Task List */
+        <h4>My Tasks</h4>
         <ul className="list-group">
           {filteredTasks.map((task) => (
-            <li key={task.id} className="list-group-item mb-2">
-              <h5>{task.title}</h5>
-              <p>{task.description}</p>
-              <p>Due Date: {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'N/A'}</p>
-              {/* Display assigned user if available */}
-              {isAdmin && task.assigned_user && <p>Assigned to: {task.assigned_user || 'Unassigned'}</p>}
-              <span className={`badge bg-${getBadgeClass(task.status)}`}>
-                {task.status}
-              </span>
-              <button className="btn btn-sm btn-primary ms-2" onClick={() => openEditModal(task)}>Edit</button>
-              <button className="btn btn-sm btn-danger ms-2" onClick={() => handleDelete(task.id)}>Delete</button>
-            </li>
+            // <li key={task.id} className="list-group-item mb-4 p-3 shadow-sm rounded">
+            //   <h5>{task.title}</h5>
+            //   <p>{task.description}</p>
+            //   <p>Due Date: {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'N/A'}</p>
+            //   /* Display assigned user if available */
+            //   {isAdmin && task.assigned_user && <p>Assigned to: {task.assigned_user || 'Unassigned'}</p>}
+            //   <span className={`badge bg-${getBadgeClass(task.status)}`}>
+            //     {task.status}
+            //   </span>
+            //   <span className={`badge ${task.priority === 1 ? 'bg-danger' :
+            //             task.priority === 2 ? 'bg-warning text-dark' :
+            //             'bg-secondary'}`}>
+            //     {task.priority === 1 ? 'High' :
+            //     task.priority === 2 ? 'Medium' : 'Low'}
+            //   </span>
+            //   <button className="btn btn-sm btn-primary ms-2" onClick={() => openEditModal(task)}>Edit</button>
+            //   <button className="btn btn-sm btn-danger ms-2" onClick={() => handleDelete(task.id)}>Delete</button>
+            // </li>
+            <div className="card mb-4 shadow-sm">
+            <div className="card-body">
+              <h5 className="card-title">{task.title}</h5>
+              <p className="card-text">{task.description}</p>
+              <p className="text-muted">Due Date: {task.due_date || 'N/A'}</p>
+              <div>
+                <span className={`badge bg-${getBadgeClass(task.status)} me-2`}>
+                  {task.status}
+                </span>
+                <span className={`badge me-2 ${task.priority === 1 ? 'bg-danger' :
+                        task.priority === 2 ? 'bg-warning text-dark' :
+                        'bg-secondary'}`}>
+                  {task.priority === 1 ? 'High' :
+                  task.priority === 2 ? 'Medium' : 'Low'}
+                </span>
+                {/* Display assigned user if available */}
+                <span className="badge bg-info">
+                  {/* Assigned to: {task.assigned_user} */}
+                  {isAdmin && task.assigned_user && <p>Assigned User: {task.assigned_user || 'Unassigned'}</p>}
+                </span>
+              </div>
+              <div className="mt-3">
+                <button className="btn btn-sm btn-primary ms-2" onClick={() => openEditModal(task)}>Edit</button>
+                <button className="btn btn-sm btn-danger ms-2" onClick={() => handleDelete(task.id)}>Delete</button>
+              </div>
+            </div>
+          </div>
           ))}
         </ul>
+        
          {/* Pagination Controls */}
         <div className="d-flex align-items-center gap-2">
           <label className="form-label mb-0">Tasks per page:</label>

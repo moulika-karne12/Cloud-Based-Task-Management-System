@@ -4,11 +4,11 @@ import RegisterPage from "./pages/RegisterPage";
 import TaskDashboard from "./pages/TaskDashboard";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute"; // Import it!
+import CreateTaskPage from "./pages/CreateTaskPage";
 
 function App() {
   return (
     <Router>
-      <Navbar />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -16,7 +16,17 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute>
+            <Navbar />
               <TaskDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/create-task"
+          element={
+            <ProtectedRoute>
+              <Navbar />
+              <CreateTaskPage />
             </ProtectedRoute>
           }
         />

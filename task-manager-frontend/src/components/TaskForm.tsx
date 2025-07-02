@@ -10,13 +10,15 @@ interface User {
 const TaskForm = ({ onTaskCreated }: { onTaskCreated: () => void }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [status, setStatus] = useState("Pending");
+  const [status, setStatus] = useState("");
   const [category, setCategory] = useState<number | null>(null);  // selected category
   const [categories, setCategories] = useState<any[]>([]);       // category list
   const [dueDate, setDueDate] = useState('');
   const [users, setUsers] = useState<User[]>([]);
   const [assignedUser, setAssignedUser] = useState(''); 
   const isAdmin = localStorage.getItem("is_admin") === "true";
+  const [priority, setPriority] = useState(2); // default: Medium
+
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,7 +32,7 @@ const TaskForm = ({ onTaskCreated }: { onTaskCreated: () => void }) => {
     try {
       const response = await axios.post(
         "http://127.0.0.1:8000/api/tasks/",
-        { title, description, status, category, due_date: dueDate, ...(assignedUser && { custom_user: assignedUser }) },
+        { title, description, status, category, due_date: dueDate, priority, ...(assignedUser && { custom_user: assignedUser }) },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -40,7 +42,7 @@ const TaskForm = ({ onTaskCreated }: { onTaskCreated: () => void }) => {
       );
       setTitle("");
       setDescription("");
-      setStatus("Pending");
+      setStatus("");
       setCategory(null); // Reset category to null or default value
       //console.log("Task created successfully:", response.data);
       alert("Task created successfully!");
@@ -87,8 +89,9 @@ const TaskForm = ({ onTaskCreated }: { onTaskCreated: () => void }) => {
 
   return (
     <form onSubmit={handleSubmit} className="mb-4">
-      <h4>Create a New Task</h4>
+      <h3><center>Let's create a New Task!</center></h3>
       <div className="mb-2">
+      <label className="form-label">Title</label>
         <input
           type="text"
           className="form-control"
@@ -99,6 +102,7 @@ const TaskForm = ({ onTaskCreated }: { onTaskCreated: () => void }) => {
         />
       </div>
       <div className="mb-2">
+      <label className="form-label">Description</label>
         <textarea
           className="form-control"
           placeholder="Task Description"
@@ -108,18 +112,21 @@ const TaskForm = ({ onTaskCreated }: { onTaskCreated: () => void }) => {
         />
       </div>
       <div className="mb-2">
+      <label className="form-label">Status</label>
         <select
           className="form-control"
           value={status}
           onChange={(e) => setStatus(e.target.value)}
           required
-        >
+        > 
+          <option value="">Select status</option>
           <option value="Pending">Pending</option>
           <option value="In Progress">In Progress</option>
           <option value="Completed">Completed</option>
         </select>
       </div>
       <div className="mb-2">
+      <label className="form-label">Category</label>
         <select
           className="form-control"
           value={category ?? ""}  // fallback empty if null
@@ -132,12 +139,28 @@ const TaskForm = ({ onTaskCreated }: { onTaskCreated: () => void }) => {
           ))}
         </select>
       </div>
-      <input
-        type="date"
-        className="form-control mb-3"
-        value={dueDate}
-        onChange={(e) => setDueDate(e.target.value)}
-      />
+      <div className="mb-2">
+      <label className="form-label">Due Date</label>
+        <input
+          type="date"
+          className="form-control mb-3"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+        />
+      </div>
+      <div className="mb-3">
+      <label className="form-label">Priority</label>
+      <select
+        className="form-select"
+        value={priority}
+        onChange={(e) => setPriority(Number(e.target.value) )}
+      >
+        <option value={1}>High</option>
+        <option value={2}>Medium</option>
+        <option value={3}>Low</option>
+      </select>
+    </div>
+
       {isAdmin && users.length > 0 && (
         <div className="mb-3">
           <label className="form-label">Assign to User</label>
